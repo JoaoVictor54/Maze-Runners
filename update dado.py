@@ -185,7 +185,7 @@ def intro():
     # DAQUI PARA BAIXO VEM O SEU JOGO
     # =====================================
 
-#intro()
+intro()
 
 
 

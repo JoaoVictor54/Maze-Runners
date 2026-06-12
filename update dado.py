@@ -11,179 +11,181 @@ import pygame
 import cv2
 import sys
 
-# ==========================
-# CONFIGURAÇÕES
-# ==========================
-LARGURA = 1331
-ALTURA = 610
+def intro():
 
-VIDEO_ARQUIVO = "Intro EEJE Games.mp4"
-AUDIO_ARQUIVO = "Intro-EEJE-Games.mp3"
+    # ==========================
+    # CONFIGURAÇÕES
+    # ==========================
+    LARGURA = 1331
+    ALTURA = 610
 
-# ==========================
-# INICIALIZAÇÃO
-# ==========================
-pygame.mixer.pre_init(44100, -16, 2, 512)
-pygame.init()
+    VIDEO_ARQUIVO = "Intro EEJE Games.mp4"
+    AUDIO_ARQUIVO = "Intro-EEJE-Games.mp3"
 
-tela = pygame.display.set_mode((LARGURA, ALTURA))
-pygame.display.set_caption("Maze-Runners")
+    # ==========================
+    # INICIALIZAÇÃO
+    # ==========================
+    pygame.mixer.pre_init(44100, -16, 2, 512)
+    pygame.init()
 
-clock = pygame.time.Clock()
+    tela = pygame.display.set_mode((LARGURA, ALTURA))
+    pygame.display.set_caption("Maze-Runners")
 
-# ==========================
-# CARREGAR VÍDEO
-# ==========================
-video = cv2.VideoCapture(VIDEO_ARQUIVO)
+    clock = pygame.time.Clock()
 
-fps = video.get(cv2.CAP_PROP_FPS)
-if fps <= 0:
-    fps = 60
+    # ==========================
+    # CARREGAR VÍDEO
+    # ==========================
+    video = cv2.VideoCapture(VIDEO_ARQUIVO)
 
-print("Carregando intro...")
+    fps = video.get(cv2.CAP_PROP_FPS)
+    if fps <= 0:
+        fps = 60
 
-frames = []
+    print("Carregando intro...")
 
-print("Carregando intro...")
+    frames = []
 
-fonte = pygame.font.SysFont(None, 50)
+    print("Carregando intro...")
 
-frames = []
-contador_animacao = 0
+    fonte = pygame.font.SysFont(None, 50)
 
-animacoes = [
-    "Carregando",
-    "Carregando.",
-    "Carregando..",
-    "Carregando..."
-]
+    frames = []
+    contador_animacao = 0
 
-while True:
+    animacoes = [
+        "Carregando",
+        "Carregando.",
+        "Carregando..",
+        "Carregando..."
+    ]
 
-    # Mantém a janela responsiva
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+    while True:
 
-    sucesso, frame = video.read()
+        # Mantém a janela responsiva
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
-    if not sucesso:
-        break
+        sucesso, frame = video.read()
 
-    # Atualiza o texto a cada 10 frames carregados
-    if contador_animacao % 10 == 0:
+        if not sucesso:
+            break
 
-        texto_str = animacoes[
-            (contador_animacao // 10) % len(animacoes)
-        ]
+        # Atualiza o texto a cada 10 frames carregados
+        if contador_animacao % 10 == 0:
 
-        tela.fill((0, 0, 0))
+            texto_str = animacoes[
+                (contador_animacao // 10) % len(animacoes)
+            ]
 
-        texto = fonte.render(
-            texto_str,
-            True,
-            (255, 255, 255)
-        )
+            tela.fill((0, 0, 0))
 
-        tela.blit(
-            texto,
-            (
-                LARGURA // 2 - texto.get_width() // 2,
-                ALTURA // 2 - texto.get_height() // 2
+            texto = fonte.render(
+                texto_str,
+                True,
+                (255, 255, 255)
             )
+
+            tela.blit(
+                texto,
+                (
+                    LARGURA // 2 - texto.get_width() // 2,
+                    ALTURA // 2 - texto.get_height() // 2
+                )
+            )
+
+            pygame.display.flip()
+
+        contador_animacao += 1
+
+        # Converte BGR -> RGB
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # Redimensiona apenas UMA VEZ durante o carregamento
+        frame = cv2.resize(frame, (LARGURA, ALTURA))
+
+        # Cria Surface
+        surface = pygame.surfarray.make_surface(
+            frame.swapaxes(0, 1)
         )
 
+        frames.append(surface)
+
+    video.release()
+
+    print(f"{len(frames)} frames carregados.")
+    while True:
+        sucesso, frame = video.read()
+
+        if not sucesso:
+            break
+
+        # Converte BGR -> RGB
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # Redimensiona apenas UMA VEZ durante o carregamento
+        frame = cv2.resize(frame, (LARGURA, ALTURA))
+
+        # Cria Surface
+        surface = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+
+        frames.append(surface)
+
+    video.release()
+
+    print(f"{len(frames)} frames carregados.")
+
+    # ==========================
+    # CARREGAR ÁUDIO
+    # ==========================
+    pygame.mixer.music.load(AUDIO_ARQUIVO)
+
+    # ==========================
+    # TOCAR INTRO
+    # ==========================
+    pygame.mixer.music.play()
+
+    frame_atual = 0
+    rodando_intro = True
+
+    while rodando_intro:
+
+        for event in pygame.event.get():
+
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            # Qualquer tecla pula a intro
+            if event.type == pygame.KEYDOWN:
+                rodando_intro = False
+
+        if frame_atual >= len(frames):
+            rodando_intro = False
+            continue
+
+        tela.blit(frames[frame_atual], (0, 0))
         pygame.display.flip()
 
-    contador_animacao += 1
+        frame_atual += 1
 
-    # Converte BGR -> RGB
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        clock.tick(fps)
 
-    # Redimensiona apenas UMA VEZ durante o carregamento
-    frame = cv2.resize(frame, (LARGURA, ALTURA))
+    # ==========================
+    # LIMPEZA
+    # ==========================
+    pygame.mixer.music.stop()
 
-    # Cria Surface
-    surface = pygame.surfarray.make_surface(
-        frame.swapaxes(0, 1)
-    )
+    print("Intro concluída!")
+    print("Iniciando jogo...")
 
-    frames.append(surface)
+    # =====================================
+    # DAQUI PARA BAIXO VEM O SEU JOGO
+    # =====================================
 
-video.release()
-
-print(f"{len(frames)} frames carregados.")
-while True:
-    sucesso, frame = video.read()
-
-    if not sucesso:
-        break
-
-    # Converte BGR -> RGB
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-    # Redimensiona apenas UMA VEZ durante o carregamento
-    frame = cv2.resize(frame, (LARGURA, ALTURA))
-
-    # Cria Surface
-    surface = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
-
-    frames.append(surface)
-
-video.release()
-
-print(f"{len(frames)} frames carregados.")
-
-# ==========================
-# CARREGAR ÁUDIO
-# ==========================
-pygame.mixer.music.load(AUDIO_ARQUIVO)
-
-# ==========================
-# TOCAR INTRO
-# ==========================
-pygame.mixer.music.play()
-
-frame_atual = 0
-rodando_intro = True
-
-while rodando_intro:
-
-    for event in pygame.event.get():
-
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-
-        # Qualquer tecla pula a intro
-        if event.type == pygame.KEYDOWN:
-            rodando_intro = False
-
-    if frame_atual >= len(frames):
-        rodando_intro = False
-        continue
-
-    tela.blit(frames[frame_atual], (0, 0))
-    pygame.display.flip()
-
-    frame_atual += 1
-
-    clock.tick(fps)
-
-# ==========================
-# LIMPEZA
-# ==========================
-pygame.mixer.music.stop()
-
-print("Intro concluída!")
-print("Iniciando jogo...")
-
-# =====================================
-# DAQUI PARA BAIXO VEM O SEU JOGO
-# =====================================
-
-
+#intro()
 
 
 
@@ -418,7 +420,45 @@ class JogoDados:
 
             # MENU
             if self.no_menu:
+
+                ## trocas de botoes para mouse
                 self.img_tranout = self.menu1
+                botao1 = pygame.Rect(510, 360, 300, 100)
+                botao2 = pygame.Rect(510, 460, 300, 100)
+                mouse_pos = pygame.mouse.get_pos()
+                if botao1.collidepoint(mouse_pos):
+                    self.menu = self.menu1
+                    
+
+                if botao2.collidepoint(mouse_pos):
+                    self.menu = self.menu2
+
+                if evento.type == pygame.MOUSEBUTTONDOWN:
+                    # Botão esquerdo
+                    if evento.button == 1 and botao1.collidepoint(mouse_pos):
+                        if self.menu == self.menu1:
+                            
+                            self.menu = self.menu3
+                            self.desenhar()
+                            time.sleep(0.01)
+                            self.no_menu = False
+                            self.img_tranout = self.escolha
+                            self.escolha_personagem = True
+
+                            self.transicao_in()
+
+                            self.tranout = True
+
+                            continue
+                    if evento.button == 1 and botao2.collidepoint(mouse_pos):
+                        if self.menu == self.menu2:
+                            self.menu = self.menu4
+                            self.desenhar()
+                            time.sleep(0.01)
+                            self.rodando = False
+
+
+                ##trocas de botoes no teclado
                 if evento.type == KEYDOWN:
 
                     if evento.key in [K_RETURN, K_KP_ENTER] and self.menu == self.menu1:
@@ -459,8 +499,8 @@ class JogoDados:
                
             # ESCOLHA DOS PERSONAGENS
             if self.escolha_personagem:
-                
-                if evento.type == KEYDOWN:
+                ## teclado
+                if evento.type == KEYDOWN :
 
                     if evento.key in [K_RETURN, K_KP_ENTER]:
 
@@ -505,13 +545,75 @@ class JogoDados:
                                 self.empate = True
 
                             continue
-                
+                ## mouse
+                botao = pygame.Rect(550, 475, 200, 60)
+                mouse_pos = pygame.mouse.get_pos()
+                if evento.type == pygame.MOUSEBUTTONDOWN:
+
+                    if evento.button == 1:
+
+                        if not self.resultado_dadop1:
+
+                            self.girar_dado_player1()
+
+                            continue
+
+                        elif not self.resultado_dadop2:
+
+                            self.girar_dado_player2()
+
+                        elif self.resultado_dadop1 and self.resultado_dadop2 and botao.collidepoint(mouse_pos):
+                            self.contbut = self.contbut2 
+                            self.desenhar()
+                            time.sleep(0.01)  
+                            self.transicao_in()
+
+                            self.tranout = True
+
+                            self.escolha_personagem = False
+
+                            if self.n1 > self.n2:
+
+                                self.playercmc = "JOGADOR 1"
+                                self.personagem_comeca = True
+                                self.img_tranout = self.cmcw
+
+                            elif self.n1 < self.n2:
+
+                                self.playercmc = "JOGADOR 2"
+                                self.personagem_comeca = True
+                                self.img_tranout = self.cmco
+
+                            else:
+
+                                self.transicao_in()
+
+                                self.tranout = True
+                                self.img_tranout = self.pagempate
+                                self.empate = True
+
+                            continue
             # EMPATE
             if self.empate:
-
+                ## teclado
                 if evento.type == KEYDOWN:
 
                     if evento.key in [K_RETURN, K_KP_ENTER]:
+
+                        self.resultado_dadop1 = ""
+                        self.resultado_dadop2 = ""
+
+                        self.empate = False
+                        self.img_tranout = self.escolha
+                        self.transicao_in()
+                        
+                        self.tranout = True
+
+                        self.escolha_personagem = True
+                ## mouse
+                if evento.type == pygame.MOUSEBUTTONDOWN:
+
+                    if evento.button == 1:
 
                         self.resultado_dadop1 = ""
                         self.resultado_dadop2 = ""
@@ -527,7 +629,15 @@ class JogoDados:
             # QUEM COMEÇA
             if self.personagem_comeca:
 
+                #teclado
                 if evento.type == KEYDOWN:
+
+                    self.tela.blit(self.menu, (0,0))
+                    pygame.draw.rect(
+                    self.tela,
+                    (0, 0, 0),
+                    (510,460,300,100)
+                    )
 
                     if evento.key in [K_RETURN, K_KP_ENTER]:
                         self.img_tranout = self.background  
@@ -540,6 +650,22 @@ class JogoDados:
                         pygame.mixer.music.play(-1)
                         self.personagem_comeca = False
                         self.jogo = True
+                #mouse
+                if evento.type == pygame.MOUSEBUTTONDOWN:
+                    botao = pygame.Rect(1050, 545, 200, 100)
+                    mouse_pos = pygame.mouse.get_pos()
+                    if evento.button == 1 and botao.collidepoint(mouse_pos):
+                        self.img_tranout = self.background  
+                        self.contbut = self.contbut2 
+                        self.desenhar()
+                        time.sleep(0.01)  
+                        self.transicao_in()
+                        self.tranout = True
+                        pygame.mixer.music.load(self.musica_tabuleiro)
+                        pygame.mixer.music.play(-1)
+                        self.personagem_comeca = False
+                        self.jogo = True
+
 
             if self.efeitos:
                 
@@ -1214,11 +1340,18 @@ class JogoDados:
 
             # JOGO
             if self.jogo:
+                #teclado
                 if evento.type == KEYDOWN:
 
-                    if evento.key == K_SPACE and self.t > 25:
+                    if evento.key in [K_SPACE,K_RETURN, K_KP_ENTER] and self.t > 25:
 
                         self.girar_dado()
+                #mouse
+                if evento.type == pygame.MOUSEBUTTONDOWN:
+                    if evento.button == 1 and self.t > 25:
+
+                        self.girar_dado()
+
                             
 
     def girar_dado(self):
@@ -1237,8 +1370,8 @@ class JogoDados:
                 self.tela.blit(face_animada, (430, 340))
             pygame.display.flip()
 
-        ##self.n = randint(1, 6)
-        self.n = 3
+        self.n = randint(1, 6)
+        ##self.n = 3
         
 
         self.resultado_dado = self.sprites_dados[self.n - 1]
@@ -1322,9 +1455,9 @@ class JogoDados:
         if self.no_menu:
 
             self.tela.fill((0,0,0))
-
-            self.tela.blit(self.menu, (0,0))
             
+            self.tela.blit(self.menu, (0,0))
+           
 
         elif self.escolha_personagem:
 
@@ -1348,10 +1481,14 @@ class JogoDados:
                 self.tela.blit(self.seta, (1060, 440))
 
             else:
-
+                pygame.draw.rect(
+                self.tela,
+                (0, 0, 0),
+                (550, 475, 200, 60)
+                )
                 self.tela.blit(self.contbut, (550, 475))
                 self.tela.blit(self.seta,(770, 480))
-
+                
             # DADO PLAYER 1
             if self.resultado_dadop1:
 
@@ -1372,10 +1509,10 @@ class JogoDados:
             else:
                 self.vez = 2
                 self.tela.blit(self.cmco,(0,-10))
-
+            
             self.tela.blit(self.contbut, (1050, 545))
             self.tela.blit(self.seta,(1270, 550))
-
+          
         elif self.empate:
            self.tela.blit(self.pagempate,(0,-75)) 
 

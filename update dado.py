@@ -3,10 +3,12 @@ from pygame.locals import *
 from sys import exit
 from random import randint
 import time
+import cv2
 
 
 
 import pygame
+import cv2
 import sys
 
 def intro():
@@ -16,6 +18,9 @@ def intro():
     # ==========================
     LARGURA = 1331
     ALTURA = 610
+
+    VIDEO_ARQUIVO = "Intro EEJE Games.mp4"
+    AUDIO_ARQUIVO = "Intro-EEJE-Games.mp3"
 
     # ==========================
     # INICIALIZAÇÃO
@@ -31,14 +36,166 @@ def intro():
     # ==========================
     # CARREGAR VÍDEO
     # ==========================
+    video = cv2.VideoCapture(VIDEO_ARQUIVO)
+
+    fps = video.get(cv2.CAP_PROP_FPS)
+    if fps <= 0:
+        fps = 60
+
+    print("Carregando intro...")
+
+    frames = []
+
+    print("Carregando intro...")
+
+    fonte = pygame.font.SysFont(None, 50)
+
+    frames = []
+    contador_animacao = 0
+
+    animacoes = [
+        "Carregando",
+        "Carregando.",
+        "Carregando..",
+        "Carregando..."
+    ]
+
+    while True:
+
+        # Mantém a janela responsiva
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        sucesso, frame = video.read()
+
+        if not sucesso:
+            break
+
+        # Atualiza o texto a cada 10 frames carregados
+        if contador_animacao % 10 == 0:
+
+            texto_str = animacoes[
+                (contador_animacao // 10) % len(animacoes)
+            ]
+
+            tela.fill((0, 0, 0))
+
+            texto = fonte.render(
+                texto_str,
+                True,
+                (255, 255, 255)
+            )
+
+            tela.blit(
+                texto,
+                (
+                    LARGURA // 2 - texto.get_width() // 2,
+                    ALTURA // 2 - texto.get_height() // 2
+                )
+            )
+
+            pygame.display.flip()
+
+        contador_animacao += 1
+
+        # Converte BGR -> RGB
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # Redimensiona apenas UMA VEZ durante o carregamento
+        frame = cv2.resize(frame, (LARGURA, ALTURA))
+
+        # Cria Surface
+        surface = pygame.surfarray.make_surface(
+            frame.swapaxes(0, 1)
+        )
+
+        frames.append(surface)
+
+    video.release()
+
+    print(f"{len(frames)} frames carregados.")
+    while True:
+        sucesso, frame = video.read()
+
+        if not sucesso:
+            break
+
+        # Converte BGR -> RGB
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # Redimensiona apenas UMA VEZ durante o carregamento
+        frame = cv2.resize(frame, (LARGURA, ALTURA))
+
+        # Cria Surface
+        surface = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+
+        frames.append(surface)
+
+    video.release()
+
+    print(f"{len(frames)} frames carregados.")
+
+    # ==========================
+    # CARREGAR ÁUDIO
+    # ==========================
+    pygame.mixer.music.load(AUDIO_ARQUIVO)
+
+    # ==========================
+    # TOCAR INTRO
+    # ==========================
+    pygame.mixer.music.play()
+
+    frame_atual = 0
+    rodando_intro = True
+
+    while rodando_intro:
+
+        for event in pygame.event.get():
+
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            # Qualquer tecla pula a intro
+            if event.type == pygame.KEYDOWN:
+                rodando_intro = False
+
+        if frame_atual >= len(frames):
+            rodando_intro = False
+            continue
+
+        tela.blit(frames[frame_atual], (0, 0))
+        pygame.display.flip()
+
+        frame_atual += 1
+
+        clock.tick(fps)
+
+    # ==========================
+    # LIMPEZA
+    # ==========================
+    pygame.mixer.music.stop()
+
+    print("Intro concluída!")
+    print("Iniciando jogo...")
+
+    # =====================================
+    # DAQUI PARA BAIXO VEM O JOGO
+    # =====================================
+
+intro()
 
 class JogoDados:
 
     def __init__(self):
 
         pygame.init()
+        self.musica_menu = "menu.wav"
         self.musica_tabuleiro = "main.wav"
-
+        pygame.mixer.music.load(self.musica_menu)
+        pygame.mixer.music.play(-1)
 
         self.tela = pygame.display.set_mode((1331, 610))
 
@@ -47,7 +204,7 @@ class JogoDados:
         self.fonte3 = pygame.font.SysFont("arial", 30)
         self.fonte4 = pygame.font.SysFont("arial", 80)
 
-        self.background = pygame.image.load("Background.png").convert_alpha()
+        self.background = pygame.image.load("Background1.png").convert_alpha()
 
         # SPRITES DOS DADOS
         self.dado1 = pygame.image.load("dado1.png").convert_alpha()

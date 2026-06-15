@@ -5,15 +5,40 @@ from random import randint
 import time
 
 
+
+import pygame
+import sys
+
+def intro():
+
+    # ==========================
+    # CONFIGURAÇÕES
+    # ==========================
+    LARGURA = 1331
+    ALTURA = 610
+
+    # ==========================
+    # INICIALIZAÇÃO
+    # ==========================
+    pygame.mixer.pre_init(44100, -16, 2, 512)
+    pygame.init()
+
+    tela = pygame.display.set_mode((LARGURA, ALTURA))
+    pygame.display.set_caption("Maze-Runners")
+
+    clock = pygame.time.Clock()
+
+    # ==========================
+    # CARREGAR VÍDEO
+    # ==========================
+
 class JogoDados:
 
     def __init__(self):
 
         pygame.init()
-        self.musica_menu = "menu.wav"
         self.musica_tabuleiro = "main.wav"
-        pygame.mixer.music.load(self.musica_menu)
-        pygame.mixer.music.play(-1)
+
 
         self.tela = pygame.display.set_mode((1331, 610))
 
@@ -22,7 +47,7 @@ class JogoDados:
         self.fonte3 = pygame.font.SysFont("arial", 30)
         self.fonte4 = pygame.font.SysFont("arial", 80)
 
-        self.background = pygame.image.load("Background1.png").convert_alpha()
+        self.background = pygame.image.load("Background.png").convert_alpha()
 
         # SPRITES DOS DADOS
         self.dado1 = pygame.image.load("dado1.png").convert_alpha()
@@ -108,8 +133,7 @@ class JogoDados:
         self.vitoria = False
         self.efeitos = True
         self.rodando = True
-        
-
+        self.pode_jogar = True
 
         ##POSIÇÕES DOS JOGADORES
         self.vez = 1
@@ -144,6 +168,7 @@ class JogoDados:
         self.pp1 = 0
         self.pp2 = 0
 
+        self.img_tranout = self.menu1
         
 
         # TEXTOS
@@ -213,6 +238,11 @@ class JogoDados:
             False,
             (0, 0, 0)
         )
+        
+        # easter eggs
+        # CODIGO KONAMI
+        self.entradas = []
+        self.konami = [K_UP, K_UP, K_DOWN, K_DOWN, K_LEFT, K_RIGHT, K_LEFT, K_RIGHT]
 
     def tratar_eventos(self):
         self.contbut = self.contbut1
@@ -220,10 +250,49 @@ class JogoDados:
 
             if evento.type == QUIT:
                 self.rodando = False
+            
 
             # MENU
             if self.no_menu:
+
+                ## trocas de botoes para mouse
                 self.img_tranout = self.menu1
+                botao1 = pygame.Rect(510, 360, 300, 100)
+                botao2 = pygame.Rect(510, 460, 300, 100)
+                mouse_pos = pygame.mouse.get_pos()
+                if botao1.collidepoint(mouse_pos):
+                    self.menu = self.menu1
+                    
+
+                if botao2.collidepoint(mouse_pos):
+                    self.menu = self.menu2
+
+                if evento.type == pygame.MOUSEBUTTONDOWN:
+                    # Botão esquerdo
+                    if evento.button == 1 and botao1.collidepoint(mouse_pos):
+                        if self.menu == self.menu1:
+                            
+                            self.menu = self.menu3
+                            self.desenhar()
+                            time.sleep(0.01)
+                            self.no_menu = False
+                            self.img_tranout = self.escolha
+                            self.escolha_personagem = True
+
+                            self.transicao_in()
+
+                            self.tranout = True
+
+                            continue
+                    if evento.button == 1 and botao2.collidepoint(mouse_pos):
+                        if self.menu == self.menu2:
+                            self.menu = self.menu4
+                            self.desenhar()
+                            time.sleep(0.01)
+                            self.rodando = False
+
+
+                ##trocas de botoes no teclado
                 if evento.type == KEYDOWN:
 
                     if evento.key in [K_RETURN, K_KP_ENTER] and self.menu == self.menu1:
@@ -264,8 +333,8 @@ class JogoDados:
                
             # ESCOLHA DOS PERSONAGENS
             if self.escolha_personagem:
-                
-                if evento.type == KEYDOWN:
+                ## teclado
+                if evento.type == KEYDOWN :
 
                     if evento.key in [K_RETURN, K_KP_ENTER]:
 
@@ -310,13 +379,75 @@ class JogoDados:
                                 self.empate = True
 
                             continue
-                
+                ## mouse
+                botao = pygame.Rect(550, 475, 200, 60)
+                mouse_pos = pygame.mouse.get_pos()
+                if evento.type == pygame.MOUSEBUTTONDOWN:
+
+                    if evento.button == 1:
+
+                        if not self.resultado_dadop1:
+
+                            self.girar_dado_player1()
+
+                            continue
+
+                        elif not self.resultado_dadop2:
+
+                            self.girar_dado_player2()
+
+                        elif self.resultado_dadop1 and self.resultado_dadop2 and botao.collidepoint(mouse_pos):
+                            self.contbut = self.contbut2 
+                            self.desenhar()
+                            time.sleep(0.01)  
+                            self.transicao_in()
+
+                            self.tranout = True
+
+                            self.escolha_personagem = False
+
+                            if self.n1 > self.n2:
+
+                                self.playercmc = "JOGADOR 1"
+                                self.personagem_comeca = True
+                                self.img_tranout = self.cmcw
+
+                            elif self.n1 < self.n2:
+
+                                self.playercmc = "JOGADOR 2"
+                                self.personagem_comeca = True
+                                self.img_tranout = self.cmco
+
+                            else:
+
+                                self.transicao_in()
+
+                                self.tranout = True
+                                self.img_tranout = self.pagempate
+                                self.empate = True
+
+                            continue
             # EMPATE
             if self.empate:
-
+                ## teclado
                 if evento.type == KEYDOWN:
 
                     if evento.key in [K_RETURN, K_KP_ENTER]:
+
+                        self.resultado_dadop1 = ""
+                        self.resultado_dadop2 = ""
+
+                        self.empate = False
+                        self.img_tranout = self.escolha
+                        self.transicao_in()
+                        
+                        self.tranout = True
+
+                        self.escolha_personagem = True
+                ## mouse
+                if evento.type == pygame.MOUSEBUTTONDOWN:
+
+                    if evento.button == 1:
 
                         self.resultado_dadop1 = ""
                         self.resultado_dadop2 = ""
@@ -332,7 +463,15 @@ class JogoDados:
             # QUEM COMEÇA
             if self.personagem_comeca:
 
+                #teclado
                 if evento.type == KEYDOWN:
+
+                    self.tela.blit(self.menu, (0,0))
+                    pygame.draw.rect(
+                    self.tela,
+                    (0, 0, 0),
+                    (510,460,300,100)
+                    )
 
                     if evento.key in [K_RETURN, K_KP_ENTER]:
                         self.img_tranout = self.background  
@@ -345,6 +484,22 @@ class JogoDados:
                         pygame.mixer.music.play(-1)
                         self.personagem_comeca = False
                         self.jogo = True
+                #mouse
+                if evento.type == pygame.MOUSEBUTTONDOWN:
+                    botao = pygame.Rect(1050, 545, 200, 100)
+                    mouse_pos = pygame.mouse.get_pos()
+                    if evento.button == 1 and botao.collidepoint(mouse_pos):
+                        self.img_tranout = self.background  
+                        self.contbut = self.contbut2 
+                        self.desenhar()
+                        time.sleep(0.01)  
+                        self.transicao_in()
+                        self.tranout = True
+                        pygame.mixer.music.load(self.musica_tabuleiro)
+                        pygame.mixer.music.play(-1)
+                        self.personagem_comeca = False
+                        self.jogo = True
+
 
             if self.efeitos:
                 
@@ -732,6 +887,8 @@ class JogoDados:
                     
                 self.movep1 = False
                 self.vez = 2
+                pygame.event.clear()
+                self.pode_jogar = True ##volta a poder rolar dado
 
             if self.movep2:
                 while self.n != 0:
@@ -1008,23 +1165,53 @@ class JogoDados:
                     
                 self.movep2 = False
                 self.vez = 1
+                pygame.event.clear()
+                self.pode_jogar = True ##volta a poder rolar dado
 
 
 
-
-
-
-
-
+            
+            
 
             # JOGO
             if self.jogo:
+                #teclado
                 if evento.type == KEYDOWN:
+                    self.entradas.append(evento.key)
+                    if self.entradas == self.konami:
+                        self.entradas.pop() ##tira a última tecla, pq espaço ou enter não tá no konami
+                        self.konami_code()
+                        self.entradas.clear()
+                        print("konami utilizado")
 
-                    if evento.key == K_SPACE and self.t > 25:
-
+                    if evento.key in [K_SPACE,K_RETURN, K_KP_ENTER] and self.t > 25 and self.pode_jogar:
+                        self.pode_jogar = False ##nao pode jogar enquanto o dado estiver rolando
+                        self.entradas.clear()##limpa a lista que checa pra easter egg
                         self.girar_dado()
-                            
+                #mouse
+                if evento.type == pygame.MOUSEBUTTONDOWN:
+                    if evento.button == 1 and self.t > 25 and self.pode_jogar:
+                        self.pode_jogar = False ##nao pode jogar enquanto o dado estiver rolando
+                        self.entradas.clear()##limpa a lista que checa pra easter egg
+                        self.girar_dado()
+
+    #CÓDIGO KONAMI
+    #quem usar ganha o jogo automaticamente
+    def konami_code(self):
+        if self.vez == 1:
+            self.img_victory = self.venc1
+            self.vencedor = "PLAYER 1"
+            self.jogo = False
+            self.img_tranout = self.venc1
+            self.vitoria = True
+        elif self.vez == 2:
+            self.img_victory = self.venc2
+            self.vencedor = "PLAYER 2"
+            self.jogo = False
+            self.img_tranout = self.venc2
+            self.transicao_in()
+            self.tranout = True
+            self.vitoria = True                    
 
     def girar_dado(self):
 
@@ -1042,8 +1229,8 @@ class JogoDados:
                 self.tela.blit(face_animada, (430, 340))
             pygame.display.flip()
 
-        ##self.n = randint(1, 6)
-        self.n = 3
+        self.n = randint(1, 6)
+        ##self.n = 3
         
 
         self.resultado_dado = self.sprites_dados[self.n - 1]
@@ -1066,6 +1253,7 @@ class JogoDados:
         self.n1 = randint(1, 6)
         
         self.resultado_dadop1 = self.sprites_dados[self.n1 - 1]
+        pygame.event.clear() ##limpa a fila de eventos, pra não guardar múltiplas tentativas de rolagem
 
     def girar_dado_player2(self):
 
@@ -1084,6 +1272,7 @@ class JogoDados:
         self.n2 = randint(1, 6)
         
         self.resultado_dadop2 = self.sprites_dados[self.n2 - 1]
+        pygame.event.clear() ##limpa a fila de eventos, pra não guardar múltiplas tentativas de rolagem
 
 
     def temporizador(self):
@@ -1127,9 +1316,9 @@ class JogoDados:
         if self.no_menu:
 
             self.tela.fill((0,0,0))
-
-            self.tela.blit(self.menu, (0,0))
             
+            self.tela.blit(self.menu, (0,0))
+           
 
         elif self.escolha_personagem:
 
@@ -1153,10 +1342,14 @@ class JogoDados:
                 self.tela.blit(self.seta, (1060, 440))
 
             else:
-
+                pygame.draw.rect(
+                self.tela,
+                (0, 0, 0),
+                (550, 475, 200, 60)
+                )
                 self.tela.blit(self.contbut, (550, 475))
                 self.tela.blit(self.seta,(770, 480))
-
+                
             # DADO PLAYER 1
             if self.resultado_dadop1:
 
@@ -1177,10 +1370,10 @@ class JogoDados:
             else:
                 self.vez = 2
                 self.tela.blit(self.cmco,(0,-10))
-
+            
             self.tela.blit(self.contbut, (1050, 545))
             self.tela.blit(self.seta,(1270, 550))
-
+          
         elif self.empate:
            self.tela.blit(self.pagempate,(0,-75)) 
 

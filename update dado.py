@@ -182,23 +182,10 @@ def intro():
     print("Iniciando jogo...")
 
     # =====================================
-    # DAQUI PARA BAIXO VEM O SEU JOGO
+    # DAQUI PARA BAIXO VEM O JOGO
     # =====================================
 
 intro()
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class JogoDados:
 
@@ -303,8 +290,7 @@ class JogoDados:
         self.vitoria = False
         self.efeitos = True
         self.rodando = True
-        
-
+        self.pode_jogar = True
 
         ##POSIÇÕES DOS JOGADORES
         self.vez = 1
@@ -409,6 +395,11 @@ class JogoDados:
             False,
             (0, 0, 0)
         )
+        
+        # easter eggs
+        # CODIGO KONAMI
+        self.entradas = []
+        self.konami = [K_UP, K_UP, K_DOWN, K_DOWN, K_LEFT, K_RIGHT, K_LEFT, K_RIGHT]
 
     def tratar_eventos(self):
         self.contbut = self.contbut1
@@ -1053,6 +1044,8 @@ class JogoDados:
                     
                 self.movep1 = False
                 self.vez = 2
+                pygame.event.clear()
+                self.pode_jogar = True ##volta a poder rolar dado
 
             if self.movep2:
                 while self.n != 0:
@@ -1329,30 +1322,53 @@ class JogoDados:
                     
                 self.movep2 = False
                 self.vez = 1
+                pygame.event.clear()
+                self.pode_jogar = True ##volta a poder rolar dado
 
 
 
-
-
-
-
-
+            
+            
 
             # JOGO
             if self.jogo:
                 #teclado
                 if evento.type == KEYDOWN:
+                    self.entradas.append(evento.key)
+                    if self.entradas == self.konami:
+                        self.entradas.pop() ##tira a última tecla, pq espaço ou enter não tá no konami
+                        self.konami_code()
+                        self.entradas.clear()
+                        print("konami utilizado")
 
-                    if evento.key in [K_SPACE,K_RETURN, K_KP_ENTER] and self.t > 25:
-
+                    if evento.key in [K_SPACE,K_RETURN, K_KP_ENTER] and self.t > 25 and self.pode_jogar:
+                        self.pode_jogar = False ##nao pode jogar enquanto o dado estiver rolando
+                        self.entradas.clear()##limpa a lista que checa pra easter egg
                         self.girar_dado()
                 #mouse
                 if evento.type == pygame.MOUSEBUTTONDOWN:
-                    if evento.button == 1 and self.t > 25:
-
+                    if evento.button == 1 and self.t > 25 and self.pode_jogar:
+                        self.pode_jogar = False ##nao pode jogar enquanto o dado estiver rolando
+                        self.entradas.clear()##limpa a lista que checa pra easter egg
                         self.girar_dado()
 
-                            
+    #CÓDIGO KONAMI
+    #quem usar ganha o jogo automaticamente
+    def konami_code(self):
+        if self.vez == 1:
+            self.img_victory = self.venc1
+            self.vencedor = "PLAYER 1"
+            self.jogo = False
+            self.img_tranout = self.venc1
+            self.vitoria = True
+        elif self.vez == 2:
+            self.img_victory = self.venc2
+            self.vencedor = "PLAYER 2"
+            self.jogo = False
+            self.img_tranout = self.venc2
+            self.transicao_in()
+            self.tranout = True
+            self.vitoria = True                    
 
     def girar_dado(self):
 
@@ -1394,6 +1410,7 @@ class JogoDados:
         self.n1 = randint(1, 6)
         
         self.resultado_dadop1 = self.sprites_dados[self.n1 - 1]
+        pygame.event.clear() ##limpa a fila de eventos, pra não guardar múltiplas tentativas de rolagem
 
     def girar_dado_player2(self):
 
@@ -1412,6 +1429,7 @@ class JogoDados:
         self.n2 = randint(1, 6)
         
         self.resultado_dadop2 = self.sprites_dados[self.n2 - 1]
+        pygame.event.clear() ##limpa a fila de eventos, pra não guardar múltiplas tentativas de rolagem
 
 
     def temporizador(self):

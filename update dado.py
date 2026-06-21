@@ -11,6 +11,16 @@ import pygame
 import cv2
 import sys
 
+
+def naobug():
+    for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+
+
+
 def intro():
 
     # ==========================
@@ -63,10 +73,7 @@ def intro():
     while True:
 
         # Mantém a janela responsiva
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+        naobug()
 
         sucesso, frame = video.read()
 
@@ -182,7 +189,7 @@ def intro():
     print("Iniciando jogo...")
 
     # =====================================
-    # DAQUI PARA BAIXO VEM O SEU JOGO
+    # DAQUI PARA BAIXO VEM O JOGO
     # =====================================
 
 #intro()
@@ -400,10 +407,10 @@ class JogoDados:
         self.empate = False
         self.personagem_comeca = False
         self.jogo = False
-        self.vitoria = True
+        self.vitoria = False
         self.efeitos = True
         self.rodando = True
-        
+        self.pode_jogar = True
 
 
         ##POSIÇÕES DOS JOGADORES
@@ -412,6 +419,11 @@ class JogoDados:
         self.p2x = 120; self.p2y =35
         self.p1is = 0; self.p2is = 0
         self.movep1 = False; self.movep2 = False
+
+        # easter eggs
+        # CODIGO KONAMI
+        self.entradas = []
+        self.konami = [K_UP, K_UP, K_DOWN, K_DOWN, K_LEFT, K_RIGHT, K_LEFT, K_RIGHT]
         
         # ANIMAÇÃO
         self.frame_ogro_idx = 0
@@ -523,7 +535,7 @@ class JogoDados:
         )
     
     # movimento cavaleiro
-    def mover_cavaleiro_para(self, alvo_x, alvo_y, step_x=10, step_y=4, frame_delay=5):
+    def mover_cavaleiro_para(self, alvo_x, alvo_y, step_x=10, step_y=4, frame_delay=20):
         self.cava_animando = True
         pixels_desde_ultimo_frame = 0
         while self.p1x != alvo_x or self.p1y != alvo_y:
@@ -546,9 +558,10 @@ class JogoDados:
                 self.frame_cava_idx = (self.frame_cava_idx + 1) % len(self.andar_cava)
 
             self.desenhar()
-            self.tratar_eventos()
+            naobug()
+            pygame.event.clear()
             frame_scaled = pygame.transform.scale(
-                self.andar_cava[self.frame_cava_idx], (300, 300)
+                self.andar_cava[self.frame_cava_idx], (50, 300)
             )
 
             if self.p1y > 352:
@@ -562,15 +575,16 @@ class JogoDados:
 
             if self.p1y < self.p2y:
                 if self.p2y > 352:
-                    frame2 = pygame.transform.scale(self.idle_ogro[self.frame_idle_orc],(300,300))
-                    self.tela.blit(pygame.transform.flip(frame2, True, False), (self.p2x, self.p2y))
+                    frame2 = pygame.transform.scale(self.idle_ogro[self.frame_idle_orc],(70,300))
+                    #self.tela.blit(pygame.transform.flip(frame2, True, False), (self.p2x, self.p2y))
                 else:
-                    frame2 = pygame.transform.scale(self.idle_ogro[self.frame_idle_orc],(300,300))
+                    frame2 = pygame.transform.scale(self.idle_ogro[self.frame_idle_orc],(70,300))
                     self.tela.blit(frame2, (self.p2x, self.p2y))
             pygame.display.flip()
             self.relogio.tick(60)
 
         self.cava_animando = False
+        
 
     #movimento do ogro
     def mover_ogro_para(self, alvo_x, alvo_y, step_x=10, step_y=4, frame_delay=5):
@@ -597,9 +611,11 @@ class JogoDados:
                 self.frame_ogro_idx = (self.frame_ogro_idx + 1) % len(self.andar_ogro)
 
             self.desenhar()
-            self.tratar_eventos()
+            naobug()
+            pygame.event.clear()
+            
             frame_scaled = pygame.transform.scale(
-                self.andar_ogro[self.frame_ogro_idx], (380, 300)
+                self.andar_ogro[self.frame_ogro_idx], (70, 300)
             )
 
 
@@ -611,20 +627,21 @@ class JogoDados:
 
             if self.p1y > self.p2y:
                 if self.p1y > 352:
-                    frame = pygame.transform.scale(self.idle_cava[self.frame_idle_cava],(300,300))
+                    frame = pygame.transform.scale(self.idle_cava[self.frame_idle_cava],(50,300))
                     self.tela.blit(pygame.transform.flip(frame, True, False), (self.p1x, self.p1y))
                 else:
-                    frame = pygame.transform.scale(self.idle_cava[self.frame_idle_cava],(300,300))
+                    frame = pygame.transform.scale(self.idle_cava[self.frame_idle_cava],(50,300))
                     self.tela.blit(frame, (self.p1x, self.p1y))
             pygame.display.flip()
             self.relogio.tick(60)
 
         self.ogro_animando = False
+        
 
 
     def animacao_danocava(self):
         for frame in self.dano_cavaleiro:
-            frame_scale = pygame.transform.scale(frame, (300, 300))
+            frame_scale = pygame.transform.scale(frame, (50, 300))
             pos_x = self.p1x
             pos_y = self.p1y
             self.p1x = -1000; self.p1y = -1000
@@ -648,7 +665,7 @@ class JogoDados:
 
     def animacao_danogro(self):
         for frame in self.dano_ogro:
-            frame_scale = pygame.transform.scale(frame, (350, 200))
+            frame_scale = pygame.transform.scale(frame, (70, 200))
             pos_x = self.p2x
             pos_y = self.p2y
             self.p2x = -1000; self.p2y = -1000
@@ -671,6 +688,7 @@ class JogoDados:
             time.sleep(0.5)
 
     def tratar_eventos(self):
+        
         self.contbut = self.contbut1
         for evento in pygame.event.get():
 
@@ -910,6 +928,7 @@ class JogoDados:
                         pygame.mixer.music.play(-1)
                         self.personagem_comeca = False
                         self.jogo = True
+                       
                 #mouse
                 if evento.type == pygame.MOUSEBUTTONDOWN:
                     botao = pygame.Rect(1050, 545, 200, 100)
@@ -925,244 +944,302 @@ class JogoDados:
                         pygame.mixer.music.play(-1)
                         self.personagem_comeca = False
                         self.jogo = True
+                        
+            # JOGO
+            if self.jogo:
+                
+                
+                #teclado
+                print("evento 1 ")
+                if evento.type == KEYDOWN:
+                    self.entradas.append(evento.key)
+                    if self.entradas == self.konami:
+                        self.entradas.pop() ##tira a última tecla, pq espaço ou enter não tá no konami
+                        self.konami_code()
+                        self.entradas.clear()
+                        
+                        print("konami utilizado")
+                
+                    if evento.key in [K_SPACE,K_RETURN, K_KP_ENTER] and self.t > 25 and self.pode_jogar:
+                        self.pode_jogar = False ##nao pode jogar enquanto o dado estiver rolando
+                        self.entradas.clear()##limpa a lista que checa pra easter egg
+                        self.girar_dado()
+                        
+                            
+                    if evento.key in [K_p] and self.t > 25:
+                        pygame.mixer.music.stop()
+                print("saiu 1")
+                #mouse
+                print("evento 2 ")
+                if evento.type == pygame.MOUSEBUTTONDOWN:
+                    if evento.button == 1 and self.t > 25 and self.pode_jogar:
+                        self.pode_jogar = False ##nao pode jogar enquanto o dado estiver rolando
+                        self.entradas.clear()##limpa a lista que checa pra easter egg
+                        pygame.event.clear()
+                        self.girar_dado()
+                        
+                print("saiu 2")
+                pygame.event.clear()   
+                print("saiu 2.2")            
+
+           
+
+            
+                
 
 
-            if self.efeitos:
+        if self.movep1:
+            while self.n != 0:
                 
-                ## PERCA DE VIDA
+                self.tv1 = 1 ##pode tirar vida
+                self.cv1 = 1 ##pode curar
+                self.pp1 = 1 ##pode prender
+                self.pm1 = 1 ##pode mais 
+                self.n -= 1
+                self.p1is += 1
+
+                destinos = {
+                    1:  (240,  4),
+                    2:  (350,  4),
+                    3:  (460,  4),
+                    4:  (570,  4),
+                    5:  (700,  4),
+                    6:  (800,  4),
+                    7:  (910,  4),
+                    8:  (1020, 4),
+                    9:  (1140, 4),
+                    10: (1140, 72),
+                    11: (1140, 144),
+                    12: (1140, 216),
+                    13: (1140, 280),
+                    14: (1140, 352),
+                    15: (1140, 424),
+                    16: (1020, 424),
+                    17: (910,  424),
+                    18: (800,  424),
+                    19: (700,  424),
+                    20: (570,  424),
+                    21: (460,  424),
+                    22: (350,  424),
+                    23: (240,  424),
+                    24: (120,  424),
+                    25: (120,  352),
+                    26: (120,  280),
+                    27: (120,  216),
+                }
+
+                if self.p1is in destinos:
+                    ax, ay = destinos[self.p1is]
+                    time.sleep(0.35)
+                    self.mover_cavaleiro_para(ax, ay)
+
+            self.movep1 = False
+            self.vez = 2
+            pygame.event.clear()
+            self.pode_jogar = True ##volta a poder rolar dado
+
+        if self.movep2:
+            
+            while self.n != 0:
+                self.tv2 = 1
+                self.cv2 = 1
+                self.pp2 = 1
+                self.pm2 = 1
+                self.n -= 1
+                self.p2is += 1
+
+                destinos = {
+                    1:  (240,  35),
+                    2:  (350,  35),
+                    3:  (460,  35),
+                    4:  (570,  35),
+                    5:  (700,  35),
+                    6:  (800,  35),
+                    7:  (910,  35),
+                    8:  (1020, 35),
+                    9:  (1140, 35),
+                    10: (1140, 103),
+                    11: (1140, 175),
+                    12: (1140, 247),
+                    13: (1140, 311),
+                    14: (1140, 383),
+                    15: (1140, 455),
+                    16: (1020, 455),
+                    17: (910,  455),
+                    18: (800,  455),
+                    19: (700,  455),
+                    20: (570,  455),
+                    21: (460,  455),
+                    22: (350,  455),
+                    23: (240,  455),
+                    24: (120,  455),
+                    25: (120,  383),
+                    26: (120,  311),
+                    27: (120,  247),
+                }
+
+                if self.p2is in destinos:
+                    ax, ay = destinos[self.p2is]
+                    time.sleep(0.35)
+                    self.mover_ogro_para(ax, ay)
+
+            self.movep2 = False
+            self.vez = 1
+            pygame.event.clear()
+            self.pode_jogar = True ##volta a poder rolar dado
+
+        if self.efeitos:
+            
+            ## PERCA DE VIDA
+            
+            if (self.p1x == 350 and self.p1y == 4 or self.p1x == 1140 and self.p1y == 4 or self.p1x == 1140 and self.p1y == 424 or self.p1x == 570 and self.p1y == 424 or self.p1x == 120 and self.p1y == 424) and self.tv1 == 1:
+                self.vidap1+=3
+                self.tela.blit(self.vidasp1[self.vidap1], (400, 275))
+                pygame.display.flip()
+                self.animacao_danocava()
                 
-                if (self.p1x == 350 and self.p1y == 4 or self.p1x == 1140 and self.p1y == 4 or self.p1x == 1140 and self.p1y == 424 or self.p1x == 570 and self.p1y == 424 or self.p1x == 120 and self.p1y == 424) and self.tv1 == 1:
-                    self.vidap1+=3
+                time.sleep(1)
+
+                
+                self.tv1 = 0 ##pode tirar vida, 0 nao 1 sim
+                
+            if (self.p2x == 350 and self.p2y == 35 or self.p2x == 1140 and self.p2y == 35 or self.p2x == 1140 and self.p2y == 455 or self.p2x == 570 and self.p2y == 455 or self.p2x == 120 and self.p2y == 455) and self.tv2 == 1:
+                self.vidap2+=3
+                self.tela.blit(self.vidasp2[self.vidap2], (700, 275))
+                pygame.display.flip()
+                self.animacao_danogro()
+                
+                
+                self.tv2 = 0
+            
+            ## MORRENDO
+            if self.vidap1 == 5 or self.vidap1 == 6 or self.vidap1 == 7:
+                self.tela.blit(self.vida6, (400, 275)) 
+
+                self.img_vidap1 = (self.vidasp1[self.vidap1])
+                self.img_vidap2 = (self.vidasp2[self.vidap2])
+                self.animacao_morte_cavaleiro()
+                self.p1is=0; self.p1x= 120; self.p1y = 4
+
+                self.vidap1 = 0
+            
+            if self.vidap2 == 5 or self.vidap2 == 6 or self.vidap2 == 7:
+                self.tela.blit(self.vida6, (700, 275)) 
+
+                self.img_vidap1 = (self.vidasp1[self.vidap1])
+                self.img_vidap2 = (self.vidasp2[self.vidap2])
+
+                self.animacao_morte_ogro()
+                self.p2is=0; self.p2x= 120; self.p2y = 35  
+                
+                self.vidap2 = 0
+
+            
+
+
+            ## ganho de vida
+
+            if (self.p1x == 460 and self.p1y ==4 or self.p1x == 1140 and self.p1y==72 or self.p1x == 1020 and self.p1y==424 or self.p1x == 460 and self.p1y==424 or self.p1x == 120 and self.p1y== 280) and self.cv1 == 1:
+                ## sprites de vida
+                self.cv1 = 0
+                if self.vidap1 !=0:
+                    self.vidap1-=1
                     self.tela.blit(self.vidasp1[self.vidap1], (400, 275))
                     pygame.display.flip()
                     time.sleep(1)
 
-                    
-                    self.tv1 = 0 ##pode tirar vida, 0 nao 1 sim
-                    
-                if (self.p2x == 350 and self.p2y == 35 or self.p2x == 1140 and self.p2y == 35 or self.p2x == 1140 and self.p2y == 455 or self.p2x == 570 and self.p2y == 455 or self.p2x == 120 and self.p2y == 455) and self.tv2 == 1:
-                    self.vidap2+=3
+            if (self.p2x == 460 and self.p2y ==35 or self.p2x == 1140 and self.p2y==103 or self.p2x == 1020 and self.p2y==455 or self.p2x == 460 and self.p2y==455 or self.p2x == 120 and self.p2y== 311) and self.cv2 == 1:
+                ## sprites de vida
+                self.cv2 = 0
+                if self.vidap2 !=0:
+                    self.vidap2-=1
                     self.tela.blit(self.vidasp2[self.vidap2], (700, 275))
                     pygame.display.flip()
                     time.sleep(1)
-                    self.tv2 = 0
-                
-                ## MORRENDO
-                if self.vidap1 == 5 or self.vidap1 == 6 or self.vidap1 == 7:
-                    self.tela.blit(self.vida6, (400, 275)) 
-                    pygame.display.flip()
-                    time.sleep(1)
-                    self.p1is=0; self.p1x= 120; self.p1y = 4
-                    self.vidap1 = 0
-                
-                if self.vidap2 == 5 or self.vidap2 == 6 or self.vidap2 == 7:
-                    self.tela.blit(self.vida6, (700, 275)) 
-                    pygame.display.flip()
-                    time.sleep(1)
-                    self.p2is=0; self.p2x= 120; self.p2y = 35  
-                    self.vidap2 = 0
-
-                
-
-
-                ## ganho de vida
-
-                if (self.p1x == 460 and self.p1y ==4 or self.p1x == 1140 and self.p1y==72 or self.p1x == 1020 and self.p1y==424 or self.p1x == 460 and self.p1y==424 or self.p1x == 120 and self.p1y== 280) and self.cv1 == 1:
-                    ## sprites de vida
-                    self.cv1 = 0
-                    if self.vidap1 !=0:
-                        self.vidap1-=1
-                        self.tela.blit(self.vidasp1[self.vidap1], (400, 275))
-                        pygame.display.flip()
-                        time.sleep(1)
-
-                if (self.p2x == 460 and self.p2y ==35 or self.p2x == 1140 and self.p2y==103 or self.p2x == 1020 and self.p2y==455 or self.p2x == 460 and self.p2y==455 or self.p2x == 120 and self.p2y== 311) and self.cv2 == 1:
-                    ## sprites de vida
-                    self.cv2 = 0
-                    if self.vidap2 !=0:
-                        self.vidap2-=1
-                        self.tela.blit(self.vidasp2[self.vidap2], (700, 275))
-                        pygame.display.flip()
-                        time.sleep(1)
-                        
-                ## Buraco NEGRO
-                if self.p1x == 1140 and self.p1y == 144:
-                        self.p1is = 0; self.p1x = 120; self.p1y = 4
-                if self.p2x == 1140 and self.p2y == 175:
-                        self.p2is = 0; self.p2x = 120; self.p2y = 35
-
-                ## RODADA SEM JOGAR
-                if (self.p1x == 910 and self.p1y == 4 or self.p1x == 800 and self.p1y == 424 or self.p1x == 120 and self.p1y == 352) and self.pp1 == 1:
-                    self.preso1 = True
-                if (self.p2x == 910 and self.p2y == 35 or self.p2x == 800 and self.p2y == 455 or self.p2x == 120 and self.p2y == 383) and self.pp2 == 1:
-                    self.preso2 = True
-
-                ## MAIS UMA RODADA
-                if (self.p1x == 700 and self.p1y == 4 or self.p1x == 1140 and self.p1y == 216 or self.p1x == 240 and self.p1y == 424) and self.pm1 == 1:
-                    self.pm1 = 0
-                    self.vez = 1
-                if (self.p2x == 700 and self.p2y == 35 or self.p2x == 1140 and self.p2y == 247 or self.p2x == 240 and self.p2y == 455) and self.pm2 == 1:
-                    self.pm2 = 0
-                    self.vez = 2
-
-                ## VENCER
-
-                if self.p1x == 120 and self.p1y == 216:
-                    self.img_victory = self.venc1
-                    self.vencedor = "PLAYER 1"
-                    self.jogo = False
-                    self.img_tranout = self.venc1
-                    self.vitoria = True
                     
-                if self.p2x == 120 and self.p2y == 247:
-                    self.img_victory = self.venc2
-                    self.vencedor = "PLAYER 2"
-                    self.jogo = False
-                    self.img_tranout = self.venc2
-                    self.transicao_in()
-                    self.tranout = True
-                    self.vitoria = True
+            ## Buraco NEGRO
+            if self.p1x == 1140 and self.p1y == 144:
+                    self.p1is = 0; self.p1x = 120; self.p1y = 4
+            if self.p2x == 1140 and self.p2y == 175:
+                    self.p2is = 0; self.p2x = 120; self.p2y = 35
 
+            ## RODADA SEM JOGAR
+            if (self.p1x == 910 and self.p1y == 4 or self.p1x == 800 and self.p1y == 424 or self.p1x == 120 and self.p1y == 352) and self.pp1 == 1:
+                self.preso1 = True
+            if (self.p2x == 910 and self.p2y == 35 or self.p2x == 800 and self.p2y == 455 or self.p2x == 120 and self.p2y == 383) and self.pp2 == 1:
+                self.preso2 = True
 
-
-
-
-
-
-                self.img_vidap1 = (self.vidasp1[self.vidap1])
-                self.img_vidap2 = (self.vidasp2[self.vidap2])
-                self.desenhar()
-
-                
-                
-
-
-            if self.movep1:
-                while self.n != 0:
-                    self.tv1 = 1 ##pode tirar vida
-                    self.cv1 = 1 ##pode curar
-                    self.pp1 = 1 ##pode prender
-                    self.pm1 = 1 ##pode mais 
-                    self.n -= 1
-                    self.p1is += 1
-
-                    destinos = {
-                        1:  (240,  4),
-                        2:  (350,  4),
-                        3:  (460,  4),
-                        4:  (570,  4),
-                        5:  (700,  4),
-                        6:  (800,  4),
-                        7:  (910,  4),
-                        8:  (1020, 4),
-                        9:  (1140, 4),
-                        10: (1140, 72),
-                        11: (1140, 144),
-                        12: (1140, 216),
-                        13: (1140, 280),
-                        14: (1140, 352),
-                        15: (1140, 424),
-                        16: (1020, 424),
-                        17: (910,  424),
-                        18: (800,  424),
-                        19: (700,  424),
-                        20: (570,  424),
-                        21: (460,  424),
-                        22: (350,  424),
-                        23: (240,  424),
-                        24: (120,  424),
-                        25: (120,  352),
-                        26: (120,  280),
-                        27: (120,  216),
-                    }
-
-                    if self.p1is in destinos:
-                        ax, ay = destinos[self.p1is]
-                        time.sleep(1)
-                        self.mover_cavaleiro_para(ax, ay)
-
-                self.movep1 = False
-                self.vez = 2
-                self.click = True
-
-            if self.movep2:
-                while self.n != 0:
-                    self.tv2 = 1
-                    self.cv2 = 1
-                    self.pp2 = 1
-                    self.pm2 = 1
-                    self.n -= 1
-                    self.p2is += 1
-
-                    destinos = {
-                        1:  (240,  35),
-                        2:  (350,  35),
-                        3:  (460,  35),
-                        4:  (570,  35),
-                        5:  (700,  35),
-                        6:  (800,  35),
-                        7:  (910,  35),
-                        8:  (1020, 35),
-                        9:  (1140, 35),
-                        10: (1140, 103),
-                        11: (1140, 175),
-                        12: (1140, 247),
-                        13: (1140, 311),
-                        14: (1140, 383),
-                        15: (1140, 455),
-                        16: (1020, 455),
-                        17: (910,  455),
-                        18: (800,  455),
-                        19: (700,  455),
-                        20: (570,  455),
-                        21: (460,  455),
-                        22: (350,  455),
-                        23: (240,  455),
-                        24: (120,  455),
-                        25: (120,  383),
-                        26: (120,  311),
-                        27: (120,  247),
-                    }
-
-                    if self.p2is in destinos:
-                        ax, ay = destinos[self.p2is]
-                        time.sleep(1)
-                        self.mover_ogro_para(ax, ay)
-
-                self.movep2 = False
+            ## MAIS UMA RODADA
+            if (self.p1x == 700 and self.p1y == 4 or self.p1x == 1140 and self.p1y == 216 or self.p1x == 240 and self.p1y == 424) and self.pm1 == 1:
+                self.pm1 = 0
                 self.vez = 1
-                self.click = True
+            if (self.p2x == 700 and self.p2y == 35 or self.p2x == 1140 and self.p2y == 247 or self.p2x == 240 and self.p2y == 455) and self.pm2 == 1:
+                self.pm2 = 0
+                self.vez = 2
+
+            ## VENCER
+
+            if self.p1x == 120 and self.p1y == 216 and self.anim1 == 0:
+                self.img_victory = self.venc1
+                self.vencedor = "PLAYER 1"
+                self.jogo = False
+                self.img_tranout = self.venc1
+                self.transicao_in()
+                self.tranout = True
+                self.vitoria = True
+                
+            if self.p2x == 120 and self.p2y == 247 and self.anim2 == 0:
+                self.img_victory = self.venc2
+                self.vencedor = "PLAYER 2"
+                self.jogo = False
+                self.img_tranout = self.venc2
+                self.transicao_in()
+                self.tranout = True
+                self.vitoria = True
+
+
+
+
+
+
+
+            self.img_vidap1 = (self.vidasp1[self.vidap1])
+            self.img_vidap2 = (self.vidasp2[self.vidap2])
+            self.desenhar()
+
+
+            
+
+
+
 
 
 
 
             
-           
-            # JOGO
-            if self.jogo:
-                if self.click:
-                    #teclado
-                    if evento.type == KEYDOWN:
-
-                        if evento.key in [K_SPACE,K_RETURN, K_KP_ENTER] and self.t > 25:
-                            self.click = False
-                            self.girar_dado()
-                            
-                        if evento.key in [K_p] and self.t > 25:
-                            pygame.mixer.music.stop()
-
-                    #mouse
-                    if evento.type == pygame.MOUSEBUTTONDOWN:
-                        if evento.button == 1 and self.t > 25:
-
-                            self.click = False    
-                            self.girar_dado()
-                    
-
-                            
-
+            
+            
+    #CÓDIGO KONAMI
+    #quem usar ganha o jogo automaticamente
+    def konami_code(self):
+        if self.vez == 1:
+            self.img_victory = self.venc1
+            self.vencedor = "PLAYER 1"
+            self.jogo = False
+            self.img_tranout = self.venc1
+            self.vitoria = True
+        elif self.vez == 2:
+            self.img_victory = self.venc2
+            self.vencedor = "PLAYER 2"
+            self.jogo = False
+            self.img_tranout = self.venc2
+            self.transicao_in()
+            self.tranout = True
+            self.vitoria = True     
+    
     def girar_dado(self):
-
+        print("rolar",self.vez)
+        print("girou dado")
         for i in range(20):
 
             self.relogio.tick(120)
@@ -1177,11 +1254,15 @@ class JogoDados:
                 self.tela.blit(face_animada, (430, 340))
             pygame.display.flip()
 
-        #self.n = randint(1, 6)
-        self.n = 6
+        self.n = randint(1, 6)
+        ##self.n = 2
         
 
         self.resultado_dado = self.sprites_dados[self.n - 1]
+        
+        print("saiu dado")
+    
+        
 
     def girar_dado_player1(self):
 
@@ -1201,6 +1282,8 @@ class JogoDados:
         self.n1 = randint(1, 6)
         
         self.resultado_dadop1 = self.sprites_dados[self.n1 - 1]
+        pygame.event.clear() ##limpa a fila de eventos, pra não guardar múltiplas tentativas de rolagem
+
 
     def girar_dado_player2(self):
 
@@ -1219,6 +1302,7 @@ class JogoDados:
         self.n2 = randint(1, 6)
         
         self.resultado_dadop2 = self.sprites_dados[self.n2 - 1]
+        pygame.event.clear() ##limpa a fila de eventos, pra não guardar múltiplas tentativas de rolagem
 
 
     def temporizador(self):
@@ -1256,6 +1340,13 @@ class JogoDados:
             )
            
             pygame.display.flip()
+
+
+    
+
+
+
+
 
     def desenhar(self): ## Apenas desenho
         
@@ -1328,6 +1419,12 @@ class JogoDados:
             
             self.tela.blit(self.background, (0, 0))
         
+           
+
+
+
+
+
             ## trocar a ordem de sobreposição dos personagens
             if self.p1y < self.p2y:
                 if not self.cava_animando:
@@ -1336,7 +1433,7 @@ class JogoDados:
                     if self.idle_timer >= 1:
                     	self.idle_timer = 0
                     	self.frame_idle_cava = (self.frame_idle_cava +1)% len(self.idle_cava)
-                    frame = pygame.transform.scale(self.idle_cava[self.frame_idle_cava], (400,300))
+                    frame = pygame.transform.scale(self.idle_cava[self.frame_idle_cava], (50,300))
                     
                     if self.p1y > 352:
                         self.tela.blit(pygame.transform.flip(frame, True, False), (self.p1x, self.p1y))
@@ -1349,7 +1446,7 @@ class JogoDados:
                     if self.idle_timer_orc>=1:
                     	self.idle_timer_orc = 0
                     	self.frame_idle_orc = (self.frame_idle_orc+1)% len (self.idle_ogro)
-                    frame2 = pygame.transform.scale(self.idle_ogro[self.frame_idle_orc],(300,300))
+                    frame2 = pygame.transform.scale(self.idle_ogro[self.frame_idle_orc],(70,300))
     
                     if self.p2y > 352:
                         self.tela.blit(pygame.transform.flip(frame2, True, False), (self.p2x, self.p2y))
@@ -1363,7 +1460,7 @@ class JogoDados:
                     if self.idle_timer_orc >=1:
                     	self.idle_timer_orc = 0
                     	self.frame_idle_orc = (self.frame_idle_orc+1)% len (self.idle_ogro)
-                    frame2 = pygame.transform.scale(self.idle_ogro[self.frame_idle_orc],(300,300))
+                    frame2 = pygame.transform.scale(self.idle_ogro[self.frame_idle_orc],(70,300))
                     
                     if self.p2y > 352:
                         self.tela.blit(pygame.transform.flip(frame2, True, False), (self.p2x, self.p2y))
@@ -1372,8 +1469,8 @@ class JogoDados:
 
 
                 else:
-                    frame = pygame.transform.scale(self.idle_cava[self.frame_idle_cava], (400,300))
-                    frame2 = pygame.transform.scale(self.idle_ogro[self.frame_idle_orc],(300,300))
+                    frame = pygame.transform.scale(self.idle_cava[self.frame_idle_cava], (50,300))
+                    frame2 = pygame.transform.scale(self.idle_ogro[self.frame_idle_orc],(70,300))
                     if self.p2y > 352:
                         self.tela.blit(pygame.transform.flip(frame2, True, False), (self.p2x, self.p2y))
                     else:
@@ -1384,7 +1481,7 @@ class JogoDados:
                     if self.idle_timer >= 1:
                     	self.idle_timer = 0
                     	self.frame_idle_cava = (self.frame_idle_cava +1)% len(self.idle_cava)
-                    frame = pygame.transform.scale(self.idle_cava[self.frame_idle_cava], (400,300))
+                    frame = pygame.transform.scale(self.idle_cava[self.frame_idle_cava], (50,300))
                     
                     if self.p1y > 352:
                         self.tela.blit(pygame.transform.flip(frame, True, False), (self.p1x, self.p1y))
@@ -1399,22 +1496,32 @@ class JogoDados:
             if self.t > 25:
                 self.tela.blit(self.img_vidap1, (400, 275))
                 self.tela.blit(self.img_vidap2, (700, 275))
-                if self.vez == 2:
+                if self.vez == 2 and self.cava_animando == False and self.ogro_animando == False:
                     self.tela.blit(self.seta, (890, 380))
-                else:
+                if self.vez == 1 and self.cava_animando == False and self.ogro_animando == False:
                     self.tela.blit(self.seta, (600, 380))
                 if self.resultado_dado:
-                    if self.vez == 2:
+                    if self.vez == 2 and self.cava_animando == False and self.ogro_animando == False:
                         self.tela.blit(self.resultado_dado, (720, 340))
+                        pygame.display.flip()
+                        time.sleep(1)
+                        
+                        
+                        
                     else:
                         self.tela.blit(self.resultado_dado, (430, 340))
+                        pygame.display.flip()
+                        time.sleep(1)
+                        
 
                     if self.preso1 == True and self.vez == 1:
                         self.vez = 2
+                        print("vez 2")
                         self.preso1 = False
                         self.pp1 = 0 ##pode prender o player1
                     if self.preso2 == True and self.vez == 2:
                         self.vez = 1
+                        print("vez 1")
                         self.preso2 = False
                         self.pp2 = 0
 
@@ -1422,8 +1529,10 @@ class JogoDados:
                     if self.vez == 1:
                         self.resultado_dado = ""
                         self.movep1 = True
+                        print("movep1")
                     if self.vez == 2:
                         self.movep2 = True
+                        print("movep2")
                         self.resultado_dado = ""
 
         elif self.vitoria:
@@ -1515,12 +1624,10 @@ class JogoDados:
 
 
 
-
-        if self.tranout:
-
-            self.tranout = False
-
+        if self.tranout == True and self.vitoria == False:
             self.transicao_out()
+            self.tranout = False
+    
 
         pygame.display.flip()
 
@@ -1528,8 +1635,8 @@ class JogoDados:
 
         while self.rodando:
 
-            self.tratar_eventos()
-
+            self.tratar_eventos() 
+            
             self.desenhar()
 
         pygame.quit()

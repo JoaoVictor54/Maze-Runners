@@ -739,7 +739,7 @@ class JogoDados:
                 ##trocas de botoes no teclado
                 if evento.type == KEYDOWN:
 
-                    if evento.key in [K_RETURN, K_KP_ENTER] and self.menu == self.menu1:
+                    if evento.key in [K_RETURN, K_KP_ENTER,K_SPACE] and self.menu == self.menu1:
 
                         
                         self.menu = self.menu3
@@ -780,7 +780,7 @@ class JogoDados:
                 ## teclado
                 if evento.type == KEYDOWN :
 
-                    if evento.key in [K_RETURN, K_KP_ENTER]:
+                    if evento.key in [K_RETURN, K_KP_ENTER,K_SPACE]:
 
                         if not self.resultado_dadop1:
 
@@ -876,7 +876,7 @@ class JogoDados:
                 ## teclado
                 if evento.type == KEYDOWN:
 
-                    if evento.key in [K_RETURN, K_KP_ENTER]:
+                    if evento.key in [K_RETURN, K_KP_ENTER,K_SPACE]:
 
                         self.resultado_dadop1 = ""
                         self.resultado_dadop2 = ""
@@ -917,7 +917,7 @@ class JogoDados:
                     (510,460,300,100)
                     )
 
-                    if evento.key in [K_RETURN, K_KP_ENTER]:
+                    if evento.key in [K_RETURN, K_KP_ENTER,K_SPACE]:
                         self.img_tranout = self.background  
                         self.contbut = self.contbut2 
                         self.desenhar()
@@ -950,10 +950,11 @@ class JogoDados:
                 
                 
                 #teclado
-                print("evento 1 ")
+                print(self.entradas)
                 if evento.type == KEYDOWN:
                     self.entradas.append(evento.key)
-                    if self.entradas == self.konami:
+                    
+                    if any(self.entradas[i : i + len(self.konami)] == self.konami for i in range(len(self.entradas))):
                         self.entradas.pop() ##tira a última tecla, pq espaço ou enter não tá no konami
                         self.konami_code()
                         self.entradas.clear()
@@ -968,9 +969,9 @@ class JogoDados:
                             
                     if evento.key in [K_p] and self.t > 25:
                         pygame.mixer.music.stop()
-                print("saiu 1")
+                
                 #mouse
-                print("evento 2 ")
+                
                 if evento.type == pygame.MOUSEBUTTONDOWN:
                     if evento.button == 1 and self.t > 25 and self.pode_jogar:
                         self.pode_jogar = False ##nao pode jogar enquanto o dado estiver rolando
@@ -978,9 +979,9 @@ class JogoDados:
                         pygame.event.clear()
                         self.girar_dado()
                         
-                print("saiu 2")
+                
                 pygame.event.clear()   
-                print("saiu 2.2")            
+                           
 
            
 
@@ -1529,10 +1530,10 @@ class JogoDados:
                     if self.vez == 1:
                         self.resultado_dado = ""
                         self.movep1 = True
-                        print("movep1")
+                        
                     if self.vez == 2:
                         self.movep2 = True
-                        print("movep2")
+                        
                         self.resultado_dado = ""
 
         elif self.vitoria:

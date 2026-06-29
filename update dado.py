@@ -212,9 +212,10 @@ class JogoDados:
     def __init__(self):
 
         pygame.init()
-        self.musica_menu = "menu.wav"
-        self.musica_tabuleiro = "main.wav"
+        self.musica_menu = "sons/start.mp3"
+        self.musica_tabuleiro = "sons/main.wav"
         pygame.mixer.music.load(self.musica_menu)
+        pygame.mixer.music.set_volume(0.2)
         pygame.mixer.music.play(-1)
 
         self.tela = pygame.display.set_mode((1331, 610))
@@ -282,6 +283,7 @@ class JogoDados:
 
         #SPRITES PÁGINAS
         self.seta = pygame.image.load("img/seta.png").convert_alpha()
+        self.cheati = pygame.image.load("img/cheat_activated3.png").convert_alpha()
 
         self.menu1 = pygame.image.load("img/menu1.png").convert_alpha()
         self.menu2 = pygame.image.load("img/menu2.png").convert_alpha()
@@ -390,15 +392,74 @@ class JogoDados:
             pygame.image.load("anim/aogro8.png").convert_alpha(),
         ]
 
-
-
-
-
-
-
-
-
+        # MUSICAS
         
+        self.sound = True
+        self.sound2 = True
+        self.cheats = pygame.mixer.Sound("sons/cheat_sound.mp3")
+        self.tiro = pygame.mixer.Sound("sons/tiro1.wav")
+        self.secund_round = pygame.mixer.Sound("sons/secund_round.mp3")
+        self.menu_select = pygame.mixer.Sound("sons/menu_select.wav")
+        self.menu_gritos = pygame.mixer.Sound("sons/grito.mp3")
+        self.menu_gritos.set_volume(0.5)
+        self.dados = pygame.mixer.Sound("sons/dados.mp3")
+        self.dados.set_volume(1.0)
+        self.guerreiro = pygame.mixer.Sound("sons/guerreiro.mp3")
+        self.orc = pygame.mixer.Sound("sons/orc.mp3")
+        self.pisadas = [
+            pygame.mixer.Sound("sons/terra_1.wav"),
+            pygame.mixer.Sound("sons/terra_2.wav"),
+            pygame.mixer.Sound("sons/terra_3.wav"),
+            pygame.mixer.Sound("sons/terra_4.wav"),
+            pygame.mixer.Sound("sons/terra_5.wav"),
+            pygame.mixer.Sound("sons/terra_6.wav"),
+            pygame.mixer.Sound("sons/terra_7.wav"),
+            pygame.mixer.Sound("sons/terra_8.wav"),
+            pygame.mixer.Sound("sons/terra_9.wav"),
+            pygame.mixer.Sound("sons/terra_10.wav") 
+        ]
+        self.pisadas_agua = [
+            pygame.mixer.Sound("sons/Footstep_Water_00.wav"),
+            pygame.mixer.Sound("sons/Footstep_Water_01.wav"),
+            pygame.mixer.Sound("sons/Footstep_Water_02.wav"),
+            pygame.mixer.Sound("sons/Footstep_Water_03.wav"),
+            pygame.mixer.Sound("sons/Footstep_Water_04.wav")
+        ]
+        self.void = pygame.mixer.Sound("sons/void.mp3")
+        self.winner = pygame.mixer.Sound("sons/win.wav")
+        self.lava = pygame.mixer.Sound("sons/Lava.wav")
+        self.cura = pygame.mixer.Sound("sons/pocao.wav")
+        self.trap = [
+            pygame.mixer.Sound("sons/trap.wav"),
+            pygame.mixer.Sound("sons/Trap_00.wav"),
+            pygame.mixer.Sound("sons/Trap_02.wav")
+        ]
+
+        # ORC
+        self.die_orc = pygame.mixer.Sound("sons/die_orc.wav")
+        self.dor_orc = [
+            pygame.mixer.Sound("sons/dor_orc1.wav"),
+            pygame.mixer.Sound("sons/dor_orc2.wav"),
+            pygame.mixer.Sound("sons/dor_orc3.wav"),
+            pygame.mixer.Sound("sons/dor_orc4.wav")
+        ]
+        self.neutre_orc = [
+            pygame.mixer.Sound("sons/Orc_18.wav"),
+            pygame.mixer.Sound("sons/Orc_42.wav"),
+            pygame.mixer.Sound("sons/Orc_50.wav")
+        ]
+
+        # HUMANO
+        self.die_humano = pygame.mixer.Sound("sons/die_humano.wav")
+        self.dor_humano = [
+            pygame.mixer.Sound("sons/hit_humano1.wav"),
+            pygame.mixer.Sound("sons/hit_humano2.wav"),
+            pygame.mixer.Sound("sons/hit_humano3.wav"),
+            pygame.mixer.Sound("sons/hit_humano4.wav")
+        ]
+        self.raiva = pygame.mixer.Sound("sons/Human_Evil_10.wav")
+        self.surpresa = pygame.mixer.Sound("sons/Human_Good_26.wav")
+        self.risada = pygame.mixer.Sound("sons/Human_Good_30.wav")
 
 
         # ESTADOS
@@ -706,7 +767,7 @@ class JogoDados:
                 mouse_pos = pygame.mouse.get_pos()
                 if botao1.collidepoint(mouse_pos):
                     self.menu = self.menu1
-                    
+
 
                 if botao2.collidepoint(mouse_pos):
                     self.menu = self.menu2
@@ -717,8 +778,10 @@ class JogoDados:
                         if self.menu == self.menu1:
                             
                             self.menu = self.menu3
+                            self.menu_gritos.play()
+                            self.menu_select.play()
                             self.desenhar()
-                            time.sleep(0.01)
+                            time.sleep(1.5)
                             self.no_menu = False
                             self.img_tranout = self.escolha
                             self.escolha_personagem = True
@@ -731,6 +794,7 @@ class JogoDados:
                     if evento.button == 1 and botao2.collidepoint(mouse_pos):
                         if self.menu == self.menu2:
                             self.menu = self.menu4
+                            self.menu_select.play()
                             self.desenhar()
                             time.sleep(0.01)
                             self.rodando = False
@@ -739,12 +803,12 @@ class JogoDados:
                 ##trocas de botoes no teclado
                 if evento.type == KEYDOWN:
 
-                    if evento.key in [K_RETURN, K_KP_ENTER,K_SPACE] and self.menu == self.menu1:
-
-                        
+                    if evento.key in [K_RETURN, K_KP_ENTER, K_SPACE] and self.menu == self.menu1:
+                        self.menu_select.play()
+                        self.menu_gritos.play()
                         self.menu = self.menu3
                         self.desenhar()
-                        time.sleep(0.01)
+                        time.sleep(1.50)
                         self.no_menu = False
                         self.img_tranout = self.escolha
                         self.escolha_personagem = True
@@ -755,14 +819,16 @@ class JogoDados:
 
                         continue
 
-                    if evento.key in [K_DOWN,K_s,K_UP,K_w]:
-                        
+                    if evento.key in [K_DOWN,K_s,K_UP,K_w,K_SPACE]:
+                        self.menu_select.play()
+                
                         if self.menu == self.menu1:
                             self.menu = self.menu2
                         else:
                             self.menu = self.menu1
                         self.desenhar()
-                    if evento.key in [K_RETURN, K_KP_ENTER] and self.menu == self.menu2:
+                    if evento.key in [K_RETURN, K_KP_ENTER,K_SPACE] and self.menu == self.menu2:
+                        self.menu_select.play()
                         self.menu = self.menu4
                         self.desenhar()
                         time.sleep(0.01)
@@ -781,22 +847,26 @@ class JogoDados:
                 if evento.type == KEYDOWN :
 
                     if evento.key in [K_RETURN, K_KP_ENTER,K_SPACE]:
-
+                        self.menu_select.play()
                         if not self.resultado_dadop1:
 
                             self.girar_dado_player1()
+                            self.dados.play()
 
                             continue
 
                         if not self.resultado_dadop2:
 
                             self.girar_dado_player2()
+                            self.dados.play()
+
 
                         else:
                             self.contbut = self.contbut2 
                             self.desenhar()
                             time.sleep(0.01)  
                             self.transicao_in()
+                            self.menu_select.play()
 
                             self.tranout = True
 
@@ -807,12 +877,14 @@ class JogoDados:
                                 self.playercmc = "JOGADOR 1"
                                 self.personagem_comeca = True
                                 self.img_tranout = self.cmcw
+                                self.guerreiro.play()
 
                             elif self.n1 < self.n2:
 
                                 self.playercmc = "JOGADOR 2"
                                 self.personagem_comeca = True
                                 self.img_tranout = self.cmco
+                                self.orc.play()
 
                             else:
 
@@ -821,24 +893,27 @@ class JogoDados:
                                 self.tranout = True
                                 self.img_tranout = self.pagempate
                                 self.empate = True
+                                self.menu_select.play()
+
 
                             continue
                 ## mouse
                 botao = pygame.Rect(550, 475, 200, 60)
                 mouse_pos = pygame.mouse.get_pos()
                 if evento.type == pygame.MOUSEBUTTONDOWN:
-
+                    self.menu_select.play()
                     if evento.button == 1:
-
+                        self.menu_select.play()
                         if not self.resultado_dadop1:
-
                             self.girar_dado_player1()
-
+                            self.dados.play()
+                            
                             continue
 
                         elif not self.resultado_dadop2:
-
                             self.girar_dado_player2()
+                            self.dados.play()
+
 
                         elif self.resultado_dadop1 and self.resultado_dadop2 and botao.collidepoint(mouse_pos):
                             self.contbut = self.contbut2 
@@ -855,12 +930,14 @@ class JogoDados:
                                 self.playercmc = "JOGADOR 1"
                                 self.personagem_comeca = True
                                 self.img_tranout = self.cmcw
-
+                                self.guerreiro.play()
+                                
                             elif self.n1 < self.n2:
 
                                 self.playercmc = "JOGADOR 2"
                                 self.personagem_comeca = True
                                 self.img_tranout = self.cmco
+                                self.orc.play()
 
                             else:
 
@@ -884,7 +961,7 @@ class JogoDados:
                         self.empate = False
                         self.img_tranout = self.escolha
                         self.transicao_in()
-                        
+                        self.menu_select.play()
                         self.tranout = True
 
                         self.escolha_personagem = True
@@ -899,6 +976,7 @@ class JogoDados:
                         self.empate = False
                         self.img_tranout = self.escolha
                         self.transicao_in()
+                        self.menu_select.play()
                         
                         self.tranout = True
 
@@ -920,6 +998,7 @@ class JogoDados:
                     if evento.key in [K_RETURN, K_KP_ENTER,K_SPACE]:
                         self.img_tranout = self.background  
                         self.contbut = self.contbut2 
+                        self.menu_select.play()
                         self.desenhar()
                         time.sleep(0.01)  
                         self.transicao_in()
@@ -936,6 +1015,7 @@ class JogoDados:
                     if evento.button == 1 and botao.collidepoint(mouse_pos):
                         self.img_tranout = self.background  
                         self.contbut = self.contbut2 
+                        self.menu_select.play()
                         self.desenhar()
                         time.sleep(0.01)  
                         self.transicao_in()
@@ -947,7 +1027,8 @@ class JogoDados:
                         
             # JOGO
             if self.jogo:
-                
+                self.guerreiro.stop()
+                self.orc.stop()
                 
                 #teclado
                 print(self.entradas)
@@ -956,16 +1037,20 @@ class JogoDados:
                     
                     if any(self.entradas[i : i + len(self.konami)] == self.konami for i in range(len(self.entradas))):
                         self.entradas.pop() ##tira a última tecla, pq espaço ou enter não tá no konami
+                        self.cheats.play()
+                        self.tela.blit(self.cheati, (900, 20))
+                        pygame.display.flip()
+                        time.sleep(2)
                         self.konami_code()
                         self.entradas.clear()
-                        
+
                         print("konami utilizado")
                 
                     if evento.key in [K_SPACE,K_RETURN, K_KP_ENTER] and self.t > 25 and self.pode_jogar:
                         self.pode_jogar = False ##nao pode jogar enquanto o dado estiver rolando
                         self.entradas.clear()##limpa a lista que checa pra easter egg
                         self.girar_dado()
-                        
+                        self.dados.play()
                             
                     if evento.key in [K_p] and self.t > 25:
                         pygame.mixer.music.stop()
@@ -978,55 +1063,61 @@ class JogoDados:
                         self.entradas.clear()##limpa a lista que checa pra easter egg
                         pygame.event.clear()
                         self.girar_dado()
-                        
+                        self.dados.play()
                 
                 pygame.event.clear()   
                            
 
-           
-
-            
-                
-
-
+        # =========================================================================
+        # MOVIMENTAÇÃO E SONS DO JOGADOR 1 (CAVALEIRO)
+        # =========================================================================
         if self.movep1:
             while self.n != 0:
-                
-                self.tv1 = 1 ##pode tirar vida
-                self.cv1 = 1 ##pode curar
-                self.pp1 = 1 ##pode prender
-                self.pm1 = 1 ##pode mais 
+                self.tv1 = 1  ## pode tirar vida
+                self.cv1 = 1  ## pode curar
+                self.pp1 = 1  ## pode prender
+                self.pm1 = 1  ## pode mais 
                 self.n -= 1
+                
+                # Correção lógica exata: incrementa antes para avaliar o som da próxima casa correta
                 self.p1is += 1
 
+                # Sistema inteligente de som de passos (Sincronizado perfeitamente com a casa)
+                if self.p1is in {6, 13, 24}:
+                    self.pisadas_agua[randint(0, len(self.pisadas_agua) - 1)].play()
+                else:
+                    self.sound = True
+                    self.pisadas[randint(0, len(self.pisadas) - 1)].play()
+
                 destinos = {
-                    1:  (240,  4),
-                    2:  (350,  4),
-                    3:  (460,  4),
-                    4:  (570,  4),
-                    5:  (700,  4),
-                    6:  (800,  4),
-                    7:  (910,  4),
-                    8:  (1020, 4),
-                    9:  (1140, 4),
-                    10: (1140, 72),
-                    11: (1140, 144),
-                    12: (1140, 216),
-                    13: (1140, 280),
-                    14: (1140, 352),
-                    15: (1140, 424),
-                    16: (1020, 424),
-                    17: (910,  424),
-                    18: (800,  424),
-                    19: (700,  424),
-                    20: (570,  424),
-                    21: (460,  424),
-                    22: (350,  424),
-                    23: (240,  424),
-                    24: (120,  424),
-                    25: (120,  352),
-                    26: (120,  280),
-                    27: (120,  216),
+                    0: (130, 4),   # INÍCIO
+                    1: (240, 4),   # ND
+                    2: (350, 4),   # LAVA
+                    3: (460, 4),   # VIDA
+                    4: (570, 4),   # ND
+                    5: (700, 4),   # ÁGUA
+                    6: (800, 4),   # ND
+                    7: (910, 4),   # SEM JOGAR
+                    8: (1020, 4),  # ND
+                    9: (1140, 4),  # LAVA
+                    10: (1140, 72),  # VIDA
+                    11: (1140, 144), # BURACO NEGRO
+                    12: (1140, 216), # ÁGUA
+                    13: (1140, 280), # ND
+                    14: (1140, 352), # ND
+                    15: (1140, 424), # LAVA
+                    16: (1020, 424), # SEM JOGAR
+                    17: (910, 424),  # MAIS UM DADO
+                    18: (800, 424),  # ND
+                    19: (700, 424),  # LAVA
+                    20: (570, 424),  # VIDA
+                    21: (460, 424),  # BURACO NEGRO
+                    22: (350, 424),  # ND
+                    23: (240, 424),  # ÁGUA
+                    24: (120, 424),  # MAIS UM DADO
+                    25: (120, 352),  # SEM JOGAR
+                    26: (120, 280),  # LAVA
+                    27: (120, 216),  # CHEGADA
                 }
 
                 if self.p1is in destinos:
@@ -1034,31 +1125,66 @@ class JogoDados:
                     time.sleep(0.35)
                     self.mover_cavaleiro_para(ax, ay)
 
+            # --- VERIFICAÇÃO DE EFEITOS SONOROS DE PARADA (PLAYER 1) ---
+            # if self.p1is in {2, 9, 15, 19, 26} and self.tv1 == 1: # LAVA / TRAP
+            #     self.lava.play()
+            #     self.dor_humano[randint(0, len(self.dor_humano) - 1)].play()
+            # elif self.p1is in {3, 10, 20} and self.cv1 == 1: # CURA
+            #     self.cura.play()
+            #     self.surpresa.play()
+            # elif self.p1is in {11, 21}: # BURACO NEGRO / VOID
+            #     self.void.play()
+            #     self.raiva.play()
+            # elif self.p1is in {7, 16, 25} and self.pp1 == 1: # PRISÃO / TRAP
+            #     self.trap[randint(0, len(self.trap) - 1)].play()
+            #     self.raiva.play()
+
+            # Condição de vitória do P1
+            if self.p1is >= 27:
+                self.vencedor = "JOGADOR 1"
+                pygame.mixer.music.stop()
+                self.winner.play() # Som de vencedor principal
+                # self.raiva.play()  # Grito final de comemoração
+                self.jogo = False
+                self.vitoria = True
+
             self.movep1 = False
             self.vez = 2
             pygame.event.clear()
-            self.pode_jogar = True ##volta a poder rolar dado
+            self.pode_jogar = True 
 
+        # =========================================================================
+        # MOVIMENTAÇÃO E SONS DO JOGADOR 2 (OGRO)
+        # =========================================================================
         if self.movep2:
-            
             while self.n != 0:
                 self.tv2 = 1
                 self.cv2 = 1
                 self.pp2 = 1
                 self.pm2 = 1
                 self.n -= 1
+                
+                # Correção lógica exata: incrementa antes para avaliar o som da próxima casa correta
                 self.p2is += 1
 
+                # Sistema inteligente de som de passos (Sincronizado perfeitamente com a casa)
+                if self.p2is in {6, 13, 24}:
+                    self.pisadas_agua[randint(0, len(self.pisadas_agua) - 1)].play()
+                else:
+                    self.sound2 = True
+                    self.pisadas[randint(0, len(self.pisadas) - 1)].play()
+
                 destinos = {
-                    1:  (240,  35),
-                    2:  (350,  35),
-                    3:  (460,  35),
-                    4:  (570,  35),
-                    5:  (700,  35),
-                    6:  (800,  35),
-                    7:  (910,  35),
-                    8:  (1020, 35),
-                    9:  (1140, 35),
+                    0: (130, 35),
+                    1: (240, 35),
+                    2: (350, 35),
+                    3: (460, 35),
+                    4: (570, 35),
+                    5: (700, 35),
+                    6: (800, 35),
+                    7: (910, 35),
+                    8: (1020, 35),
+                    9: (1140, 35),
                     10: (1140, 103),
                     11: (1140, 175),
                     12: (1140, 247),
@@ -1066,17 +1192,17 @@ class JogoDados:
                     14: (1140, 383),
                     15: (1140, 455),
                     16: (1020, 455),
-                    17: (910,  455),
-                    18: (800,  455),
-                    19: (700,  455),
-                    20: (570,  455),
-                    21: (460,  455),
-                    22: (350,  455),
-                    23: (240,  455),
-                    24: (120,  455),
-                    25: (120,  383),
-                    26: (120,  311),
-                    27: (120,  247),
+                    17: (910, 455),
+                    18: (800, 455),
+                    19: (700, 455),
+                    20: (570, 455),
+                    21: (460, 455),
+                    22: (350, 455),
+                    23: (240, 455),
+                    24: (120, 455),
+                    25: (120, 383),
+                    26: (120, 311),
+                    27: (120, 247),
                 }
 
                 if self.p2is in destinos:
@@ -1084,16 +1210,42 @@ class JogoDados:
                     time.sleep(0.35)
                     self.mover_ogro_para(ax, ay)
 
+            # --- VERIFICAÇÃO DE EFEITOS SONOROS DE PARADA (PLAYER 2) ---
+            # if self.p2is in {2, 9, 15, 19, 26} and self.tv2 == 1: # LAVA / TRAP
+            #     self.lava.play()
+            #     self.trap[randint(0, len(self.trap) - 1)].play()
+            #     self.dor_orc[randint(0, len(self.dor_orc) - 1)].play()
+            # elif self.p2is in {3, 10, 20} and self.cv2 == 1: # CURA
+            #     self.cura.play()
+            #     self.neutre_orc[randint(0, len(self.neutre_orc) - 1)].play()
+            # elif self.p2is in {11, 21}: # BURACO NEGRO / VOID
+            #     self.void.play()
+            #     self.neutre_orc[randint(0, len(self.neutre_orc) - 1)].play()
+            # elif self.p2is in {7, 16, 25} and self.pp2 == 1: # PRISÃO / TRAP
+            #     self.trap[randint(0, len(self.trap) - 1)].play()
+            #     self.dor_orc[randint(0, len(self.dor_orc) - 1)].play()
+
+            # Condição de vitória do P2
+            if self.p2is >= 27:
+                self.vencedor = "JOGADOR 2"
+                pygame.mixer.music.stop()
+                self.winner.play() # Som de vencedor principal
+                # self.neutre_orc[0].play() # Grito de vitória orc
+                self.jogo = False
+                self.vitoria = True
+
             self.movep2 = False
             self.vez = 1
             pygame.event.clear()
-            self.pode_jogar = True ##volta a poder rolar dado
+            self.pode_jogar = True
 
         if self.efeitos:
             
             ## PERCA DE VIDA
             
             if (self.p1x == 350 and self.p1y == 4 or self.p1x == 1140 and self.p1y == 4 or self.p1x == 1140 and self.p1y == 424 or self.p1x == 570 and self.p1y == 424 or self.p1x == 120 and self.p1y == 424) and self.tv1 == 1:
+                self.lava.play()
+                self.dor_humano[randint(0, len(self.dor_humano) - 1)].play()
                 self.vidap1+=3
                 self.tela.blit(self.vidasp1[self.vidap1], (400, 275))
                 pygame.display.flip()
@@ -1105,6 +1257,8 @@ class JogoDados:
                 self.tv1 = 0 ##pode tirar vida, 0 nao 1 sim
                 
             if (self.p2x == 350 and self.p2y == 35 or self.p2x == 1140 and self.p2y == 35 or self.p2x == 1140 and self.p2y == 455 or self.p2x == 570 and self.p2y == 455 or self.p2x == 120 and self.p2y == 455) and self.tv2 == 1:
+                self.lava.play()
+                self.dor_orc[randint(0, len(self.dor_orc) - 1)].play()
                 self.vidap2+=3
                 self.tela.blit(self.vidasp2[self.vidap2], (700, 275))
                 pygame.display.flip()
@@ -1116,9 +1270,10 @@ class JogoDados:
             ## MORRENDO
             if self.vidap1 == 5 or self.vidap1 == 6 or self.vidap1 == 7:
                 self.tela.blit(self.vida6, (400, 275)) 
-
+                self.die_humano.play()
                 self.img_vidap1 = (self.vidasp1[self.vidap1])
                 self.img_vidap2 = (self.vidasp2[self.vidap2])
+                time.sleep(0.5)
                 self.animacao_morte_cavaleiro()
                 self.p1is=0; self.p1x= 120; self.p1y = 4
 
@@ -1126,17 +1281,14 @@ class JogoDados:
             
             if self.vidap2 == 5 or self.vidap2 == 6 or self.vidap2 == 7:
                 self.tela.blit(self.vida6, (700, 275)) 
-
+                self.die_orc.play()
                 self.img_vidap1 = (self.vidasp1[self.vidap1])
                 self.img_vidap2 = (self.vidasp2[self.vidap2])
-
+                time.sleep(0.5)
                 self.animacao_morte_ogro()
                 self.p2is=0; self.p2x= 120; self.p2y = 35  
                 
                 self.vidap2 = 0
-
-            
-
 
             ## ganho de vida
 
@@ -1144,6 +1296,8 @@ class JogoDados:
                 ## sprites de vida
                 self.cv1 = 0
                 if self.vidap1 !=0:
+                    self.surpresa.play()
+                    self.cura.play()
                     self.vidap1-=1
                     self.tela.blit(self.vidasp1[self.vidap1], (400, 275))
                     pygame.display.flip()
@@ -1154,6 +1308,8 @@ class JogoDados:
                 self.cv2 = 0
                 if self.vidap2 !=0:
                     self.vidap2-=1
+                    self.neutre_orc[randint(0, len(self.neutre_orc) - 1)].play()
+                    self.cura.play()
                     self.tela.blit(self.vidasp2[self.vidap2], (700, 275))
                     pygame.display.flip()
                     time.sleep(1)
@@ -1161,22 +1317,44 @@ class JogoDados:
             ## Buraco NEGRO
             if self.p1x == 1140 and self.p1y == 144:
                     self.p1is = 0; self.p1x = 120; self.p1y = 4
+                    self.raiva.play()
+                    self.void.play()
+                    time.sleep(2.00)
             if self.p2x == 1140 and self.p2y == 175:
                     self.p2is = 0; self.p2x = 120; self.p2y = 35
+                    self.neutre_orc[randint(0, len(self.neutre_orc) - 1)].play()
+                    self.void.play()
+                    time.sleep(2.00)
 
             ## RODADA SEM JOGAR
             if (self.p1x == 910 and self.p1y == 4 or self.p1x == 800 and self.p1y == 424 or self.p1x == 120 and self.p1y == 352) and self.pp1 == 1:
                 self.preso1 = True
+                if self.sound == True:
+                    self.trap[randint(0, len(self.trap) - 1)].play()
+                    self.sound = False
+                    self.raiva.play()
+
             if (self.p2x == 910 and self.p2y == 35 or self.p2x == 800 and self.p2y == 455 or self.p2x == 120 and self.p2y == 383) and self.pp2 == 1:
                 self.preso2 = True
+                if self.sound2 == True:
+                    self.trap[randint(0, len(self.trap) - 1)].play()
+                    self.sound2 = False
+                    self.neutre_orc[randint(0, len(self.neutre_orc) - 1)].play()
 
             ## MAIS UMA RODADA
             if (self.p1x == 700 and self.p1y == 4 or self.p1x == 1140 and self.p1y == 216 or self.p1x == 240 and self.p1y == 424) and self.pm1 == 1:
                 self.pm1 = 0
                 self.vez = 1
+                self.surpresa.play()
+                self.surpresa.set_volume(0.8)
+                self.secund_round.play()
+                self.secund_round.set_volume(0.6)
             if (self.p2x == 700 and self.p2y == 35 or self.p2x == 1140 and self.p2y == 247 or self.p2x == 240 and self.p2y == 455) and self.pm2 == 1:
                 self.pm2 = 0
                 self.vez = 2
+                self.neutre_orc[randint(0, len(self.neutre_orc) - 1)].play()
+                self.secund_round.play()
+                self.secund_round.set_volume(1.0)
 
             ## VENCER
 
@@ -1188,6 +1366,7 @@ class JogoDados:
                 self.transicao_in()
                 self.tranout = True
                 self.vitoria = True
+
                 
             if self.p2x == 120 and self.p2y == 247 and self.anim2 == 0:
                 self.img_victory = self.venc2
@@ -1197,11 +1376,6 @@ class JogoDados:
                 self.transicao_in()
                 self.tranout = True
                 self.vitoria = True
-
-
-
-
-
 
 
             self.img_vidap1 = (self.vidasp1[self.vidap1])
@@ -1255,9 +1429,8 @@ class JogoDados:
                 self.tela.blit(face_animada, (430, 340))
             pygame.display.flip()
 
-        self.n = randint(1, 6)
-        ##self.n = 2
-        
+        self.n = randint(3, 4)
+        # self.n = 5
 
         self.resultado_dado = self.sprites_dados[self.n - 1]
         
@@ -1563,6 +1736,7 @@ class JogoDados:
                 self.img_victory = self.perdp2_6.copy()
                 self.tela.blit(self.img_victory, (0,0))
                 pygame.display.flip()
+                self.tiro.play()
                 time.sleep(0.04)
             if self.vencedor == "PLAYER 1":
                 self.tela.blit(self.img_victory, (0,0))
@@ -1592,6 +1766,7 @@ class JogoDados:
                 self.img_victory = self.perdp1_6.copy()
                 self.tela.blit(self.img_victory, (0,0))
                 pygame.display.flip()
+                self.tiro.play()
                 time.sleep(0.04)
             if self.vencedor != "Player 1":
                 self.tela.blit(self.img_victory, (0,0))

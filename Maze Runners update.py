@@ -192,7 +192,7 @@ def intro():
     # DAQUI PARA BAIXO VEM O JOGO
     # =====================================
 
-intro()
+#intro()
 
 
 
@@ -283,6 +283,7 @@ class JogoDados:
 
         #SPRITES PÁGINAS
         self.seta = pygame.image.load("img/seta.png").convert_alpha()
+        self.cheati = pygame.image.load("img/cheat_activated3.png").convert_alpha()
 
         self.menu1 = pygame.image.load("img/menu1.png").convert_alpha()
         self.menu2 = pygame.image.load("img/menu2.png").convert_alpha()
@@ -395,6 +396,8 @@ class JogoDados:
         
         self.sound = True
         self.sound2 = True
+        self.cheats = pygame.mixer.Sound("sons/cheat_sound.mp3")
+        self.tiro = pygame.mixer.Sound("sons/tiro1.wav")
         self.secund_round = pygame.mixer.Sound("sons/secund_round.mp3")
         self.menu_select = pygame.mixer.Sound("sons/menu_select.wav")
         self.menu_gritos = pygame.mixer.Sound("sons/grito.mp3")
@@ -892,6 +895,7 @@ class JogoDados:
                                 self.empate = True
                                 self.menu_select.play()
 
+
                             continue
                 ## mouse
                 botao = pygame.Rect(550, 475, 200, 60)
@@ -1023,7 +1027,8 @@ class JogoDados:
                         
             # JOGO
             if self.jogo:
-                
+                self.guerreiro.stop()
+                self.orc.stop()
                 
                 #teclado
                 print(self.entradas)
@@ -1032,8 +1037,13 @@ class JogoDados:
                     
                     if any(self.entradas[i : i + len(self.konami)] == self.konami for i in range(len(self.entradas))):
                         self.entradas.pop() ##tira a última tecla, pq espaço ou enter não tá no konami
+                        self.cheats.play()
+                        self.tela.blit(self.cheati, (900, 20))
+                        pygame.display.flip()
+                        time.sleep(2)
                         self.konami_code()
                         self.entradas.clear()
+
                         print("konami utilizado")
                 
                     if evento.key in [K_SPACE,K_RETURN, K_KP_ENTER] and self.t > 25 and self.pode_jogar:
@@ -1726,6 +1736,7 @@ class JogoDados:
                 self.img_victory = self.perdp2_6.copy()
                 self.tela.blit(self.img_victory, (0,0))
                 pygame.display.flip()
+                self.tiro.play()
                 time.sleep(0.04)
             if self.vencedor == "PLAYER 1":
                 self.tela.blit(self.img_victory, (0,0))
@@ -1755,6 +1766,7 @@ class JogoDados:
                 self.img_victory = self.perdp1_6.copy()
                 self.tela.blit(self.img_victory, (0,0))
                 pygame.display.flip()
+                self.tiro.play()
                 time.sleep(0.04)
             if self.vencedor != "Player 1":
                 self.tela.blit(self.img_victory, (0,0))
